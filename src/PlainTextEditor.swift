@@ -3787,7 +3787,7 @@ extension ChecklistTextView {
             lineFragments: fragments,
             containerOrigin: textContainerOrigin,
             containerWidth: textContainer.size.width,
-            scale: window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2
+            scale: scale
         )
     }
 

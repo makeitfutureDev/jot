@@ -47,7 +47,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     func applicationDidFinishLaunching(_ notification: Notification) {
         CurrencyRates.bootstrap(fetchesLive: settings.fetchesLiveCurrencyRates)
         ReduceMotion.startObserving()
-        UpdateChecker.check(enabled: settings.checksForUpdates)
         notesManager.timerKeyword = settings.effectiveTimerKeyword
         notesManager.pomodoroKeyword = settings.effectivePomodoroKeyword
         notesManager.reminderKeyword = settings.effectiveReminderKeyword
@@ -144,7 +143,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
         // A copy left running across midnight should not be stuck on
         // yesterday's exchange rates until the next relaunch.
         CurrencyRates.refreshIfNeeded(fetchesLive: settings.fetchesLiveCurrencyRates)
-        UpdateChecker.check(enabled: settings.checksForUpdates)
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -159,29 +157,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     // MARK: - Apple Notes
 
     private func scheduleAppleNotesSync(_ notes: [Note]) {
-        guard settings.syncsToAppleNotes else { return }
-        pendingSync?.cancel()
-        let work = DispatchWorkItem {
-            Task { await self.appleNotes.sync(notes) }
-        }
-        pendingSync = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5, execute: work)
+        return // Notes remain local to this app.
     }
 
     @objc func syncToAppleNotesNow(_ sender: Any?) {
-        let notes = notesManager.notes
-        Task {
-            let result = await appleNotes.sync(notes)
-            await MainActor.run {
-                let alert = NSAlert()
-                alert.messageText = result.failed == 0
-                    ? "Synced to Apple Notes"
-                    : "Synced with problems"
-                alert.informativeText = "\(result.created) created, \(result.updated) updated"
-                    + (result.failed > 0 ? ", \(result.failed) failed. Check that Jot is allowed to control Notes in System Settings › Privacy & Security › Automation." : ".")
-                alert.runModal()
-            }
-        }
+        return // External synchronization is disabled.
     }
 
     // MARK: - Settings
@@ -1036,35 +1016,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, NSMe
     /// available with the choice to install it now. Before, a check that
     /// found something said nothing, and the news only surfaced the next
     /// time the status item's menu happened to be opened.
-    private func checkForUpdatesNow() {
-        Task {
-            await UpdateChecker.shared.forceCheck()
-            // An accessory app's alert would otherwise open behind whatever
-            // app is frontmost.
-            NSApp.activate(ignoringOtherApps: true)
-            let alert = NSAlert()
-            if UpdateChecker.shared.availableVersion != nil, UpdateChecker.brewForCaskInstall() == nil {
-                // Not a Homebrew install: performUpdate's own alert already
-                // says what is available and offers the download.
-                UpdateChecker.shared.performUpdate()
-            } else if let available = UpdateChecker.shared.availableVersion {
-                alert.messageText = "Jot \(available) is available"
-                alert.informativeText = "Install it now? Jot relaunches when the update finishes."
-                alert.addButton(withTitle: "Install Update")
-                alert.addButton(withTitle: "Later")
-                if alert.runModal() == .alertFirstButtonReturn {
-                    UpdateChecker.shared.performUpdate()
-                }
-            } else {
-                let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "?"
-                alert.messageText = "You're up to date"
-                alert.informativeText = "Jot \(version) is the latest version."
-                alert.runModal()
-            }
-        }
-    }
+    private func checkForUpdatesNow() { CatalogueUpdates.open() }
 
-    /// Help › Jot Help. The README is the manual.
     @objc private func showHelp() {
         NSWorkspace.shared.open(UpdateChecker.helpPage)
     }

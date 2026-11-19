@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "reviewedAt": "2026-11-11",
+  "build": 3,
+  "sourceSHA256": "fe9e5f5f3ad131c089dedc410c45c70bc3a9dc780a384b5bbb23e96bf6549c5c",
+  "installer": "Jot-3.dmg",
+  "installerSHA256": "6fe78d415fef8dfb8a05c3a07306962959c7296f3f41c693c62c297c8a01b53f",
+  "externalServiceRequests": "disabled",
+  "allowedAppServiceDestinations": [],
+  "explicitUserNavigation": "allowed in the chosen browser",
+  "evidence": "SECURITY_REVIEW.md",
+  "limitations": "Source/entry-point review and regression checks; not a proof of absence of every flaw.",
+  "payloadSignature": "Ed25519 verified with the existing catalogue public key"
+}

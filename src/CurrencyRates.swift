@@ -46,10 +46,7 @@ enum CurrencyRates {
 
     // jsDelivr first; the maintainer's own Cloudflare Pages mirror as a
     // fallback, since both are free and neither guarantees uptime alone.
-    private static let sources = [
-        URL(string: "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json")!,
-        URL(string: "https://latest.currency-api.pages.dev/v1/currencies/usd.json")!,
-    ]
+    private static let sources: [URL] = []
 
     private static let refreshInterval: TimeInterval = 86400
 
@@ -102,31 +99,7 @@ enum CurrencyRates {
 
     @discardableResult
     private static func fetch(from url: URL) async -> Bool {
-        do {
-            let (data, _) = try await URLSession.shared.data(from: url)
-            let cached = try JSONDecoder().decode(CachedRates.self, from: data)
-            var table = invert(cached.usd)
-            table["usd"] = 1.0
-            // Rebound as a `let` before crossing the await below: a captured
-            // `var` read on the other side of a suspension point is what
-            // Swift 6 flags, even though nothing here actually races.
-            let fetchedTable = table
-
-            await MainActor.run {
-                rates = fetchedTable
-                lastFetched = Date()
-            }
-
-            try FileManager.default.createDirectory(
-                at: cacheURL.deletingLastPathComponent(),
-                withIntermediateDirectories: true
-            )
-            try data.write(to: cacheURL, options: .atomic)
-            return true
-        } catch {
-            NSLog("Jot: currency rate fetch failed (\(url.host ?? "?")): \(error.localizedDescription)")
-            return false
-        }
+        return false // External exchange-rate services are disabled.
     }
 
     static func convert(_ amount: Double, from: String, to: String) -> Result<MathExpression.Value, MathExpression.EvalError> {

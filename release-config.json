@@ -1,0 +1,13 @@
+{
+  "name": "Jot",
+  "slug": "jot",
+  "bundleID": "com.makeitfuture.Jot",
+  "version": "1.6.0",
+  "build": 3,
+  "upstream": "https://github.com/lsuryatej/jot",
+  "commit": "f862606d2895b7a11af552eec12750701088b073",
+  "publicKey": "VYzjOa7bnYlQySjISva6QLcDgCxeVvSdAHWn1ZK4UbA=",
+  "feedURL": "https://public.makeitfuture.eu/jot/appcast.xml",
+  "downloadURLPrefix": "https://public.makeitfuture.eu/jot/",
+  "signingAccount": "com.makeitfuture.Apps"
+}

@@ -301,13 +301,6 @@ enum MainMenu {
         updates.target = target
         menu.addItem(updates)
 
-        let sync = NSMenuItem(
-            title: "Sync to Apple Notes",
-            action: Selector(("syncToAppleNotesNow:")),
-            keyEquivalent: ""
-        )
-        sync.target = target
-        menu.addItem(sync)
 
         menu.addItem(.separator())
 

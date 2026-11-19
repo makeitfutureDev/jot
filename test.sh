@@ -43,6 +43,7 @@ OUT="$(mktemp -d)/NotesManagerTests"
     src/Units.swift \
     src/CurrencyRates.swift \
     src/MathExpression.swift \
+    src/CatalogueUpdates.swift \
     src/UpdateChecker.swift \
     src/NoteStore.swift \
     src/ReminderDirective.swift \

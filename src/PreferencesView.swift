@@ -514,22 +514,22 @@ struct SettingsPaneView: View {
     private var privacyPane: some View {
         Form {
             Section("Network") {
-                Toggle("Fetch live currency exchange rates", isOn: $settings.fetchesLiveCurrencyRates)
-                Text("Off by default: the only network request this app can make. On, it checks a public rate API once a day; off, conversions use the last cached rate.")
+                Text("Currency conversions use offline rates.")
+                Text("No exchange-rate API requests are made.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Toggle("Automatically check for app updates", isOn: $settings.checksForUpdates)
-                Text("Checks GitHub once a day for a newer release. No note content or identifying information is sent.")
+                Button("Manage updates in Makeitfuture Apps…") { CatalogueUpdates.open() }
+                Text("App updates are downloaded and verified by the Makeitfuture catalogue.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
             Section("Apple Notes") {
-                Toggle("Sync notes to an Apple Notes folder", isOn: $settings.syncsToAppleNotes)
-                Text("Pushes each note into a \"Jot\" folder in Apple Notes. One direction only — edits made there are not read back. macOS will ask for permission the first time.")
+                Text("Notes stay in local Jot storage.")
+                Text("External synchronization is disabled for this distribution.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

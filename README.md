@@ -1,3 +1,7 @@
+> **Makeitfuture source:** [makeitfutureDev/jot](https://github.com/makeitfutureDev/jot), branch `makeitfuture`. Original project: [lsuryatej/jot](https://github.com/lsuryatej/jot).
+
+> **Makeitfuture build:** build with `./scripts/build-makeitfuture.sh`; install and update through Makeitfuture Apps. This version has no embedded Sparkle updater. The original project and its license are credited below and in the app bundle.
+
 # Jot
 
 A plain-text scratchpad for macOS. No Electron, no dependencies, no telemetry.

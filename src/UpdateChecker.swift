@@ -29,7 +29,7 @@ final class UpdateChecker: ObservableObject {
     private init() {}
 
     static func check(enabled: Bool) {
-        shared.checkIfNeeded(enabled: enabled)
+        // Makeitfuture Apps owns update discovery and installation.
     }
 
     func checkIfNeeded(enabled: Bool) {
@@ -44,19 +44,7 @@ final class UpdateChecker: ObservableObject {
     }
 
     private func run() async {
-        lastChecked = Date()
-        struct Release: Decodable { let tag_name: String }
-        do {
-            var request = URLRequest(url: Self.releasesAPI)
-            request.setValue("Jot", forHTTPHeaderField: "User-Agent")
-            let (data, _) = try await URLSession.shared.data(for: request)
-            let release = try JSONDecoder().decode(Release.self, from: data)
-            let latest = release.tag_name.trimmingCharacters(in: CharacterSet(charactersIn: "v"))
-            let current = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
-            availableVersion = Self.isNewer(latest, than: current) ? latest : nil
-        } catch {
-            NSLog("Jot: update check failed: \(error.localizedDescription)")
-        }
+        availableVersion = nil // Only the catalogue checks for updates.
     }
 
     /// Dotted-integer comparison plus the one semver rule that matters here:
@@ -98,66 +86,7 @@ final class UpdateChecker: ObservableObject {
         return exitStatus == 0 ? .alreadyCurrent : .failed
     }
 
-    func performUpdate() {
-        guard !isUpdating, let version = availableVersion else { return }
-        guard let brew = Self.brewForCaskInstall() else {
-            // An ad-hoc-signed app can't safely replace itself, and remote
-            // install scripts are deliberately never run from here.
-            let alert = NSAlert()
-            alert.messageText = "Jot \(version) is available"
-            alert.informativeText = "Download the new version and replace Jot in your Applications folder."
-            alert.addButton(withTitle: "Download")
-            alert.addButton(withTitle: "Cancel")
-            NSApp.activate(ignoringOtherApps: true)
-            if alert.runModal() == .alertFirstButtonReturn {
-                NSWorkspace.shared.open(Self.releasesPage)
-            }
-            return
-        }
-
-        let versionBefore = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
-        let appPath = Bundle.main.bundlePath
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: brew)
-        process.arguments = ["upgrade", "--cask", "jot"]
-        var environment = ProcessInfo.processInfo.environment
-        // brew refreshes third-party taps only once a day by default, which
-        // would hide a cask bumped minutes ago.
-        environment["HOMEBREW_AUTO_UPDATE_SECS"] = "0"
-        environment["HOMEBREW_NO_ENV_HINTS"] = "1"
-        process.environment = environment
-        let errPipe = Pipe()
-        process.standardError = errPipe
-        process.standardOutput = FileHandle.nullDevice
-
-        do {
-            try process.run()
-        } catch {
-            showUpdateFailed(detail: error.localizedDescription)
-            return
-        }
-        isUpdating = true
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            // Drained before waiting so a chatty brew can't block on a full pipe.
-            let stderr = String(decoding: errPipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
-            process.waitUntilExit()
-            let status = process.terminationStatus
-            if status != 0 { NSLog("Jot: brew upgrade exited \(status): \(stderr)") }
-            Task { @MainActor in
-                let checker = UpdateChecker.shared
-                checker.isUpdating = false
-                let installed = Self.installedVersion(at: appPath)
-                switch Self.outcome(versionBefore: versionBefore, installedAfter: installed, exitStatus: status) {
-                case .relaunch:
-                    checker.relaunch(appPath: appPath)
-                case .alreadyCurrent, .failed:
-                    checker.showUpdateFailed(detail: Self.briefError(from: stderr))
-                }
-            }
-        }
-    }
+    func performUpdate() { CatalogueUpdates.open() }
 
     private func showUpdateFailed(detail: String?) {
         let alert = NSAlert()

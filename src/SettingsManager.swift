@@ -896,7 +896,9 @@ final class SettingsManager: ObservableObject {
     /// silently missing your fixes is the failure mode this exists to avoid,
     /// and the request carries nothing to protect.
     @Published var checksForUpdates: Bool {
-        didSet { defaults.set(checksForUpdates, forKey: Key.checksForUpdates) }
+        didSet {
+            defaults.set(checksForUpdates, forKey: Key.checksForUpdates)
+        }
     }
 
     /// Push notes into an Apple Notes folder as they are saved.
